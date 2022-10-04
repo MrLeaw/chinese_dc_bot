@@ -14,7 +14,6 @@ class MyClient(discord.Client):
         print('Message from {0.author}: {0.content}'.format(message))
 
 intents = discord.Intents.default()
-intents.message_content = True
 
 client = MyClient(intents=intents)
 client.run(BOTTOKEN)
