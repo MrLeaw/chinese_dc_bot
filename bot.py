@@ -1,14 +1,15 @@
 import discord
 from discord.ext import commands
 import os
+from cmds import register_commands
 from dotenv import load_dotenv
+
 load_dotenv()
 
 BOTTOKEN = os.getenv('BOTTOKEN')
 
 bot = commands.Bot()
-@bot.slash_command(name="ping")
-async def first_slash(ctx): 
-    await ctx.respond("pong")
+
+register_commands(bot)
 
 bot.run(BOTTOKEN)
