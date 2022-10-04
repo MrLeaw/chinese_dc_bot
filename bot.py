@@ -10,6 +10,10 @@ BOTTOKEN = os.getenv('BOTTOKEN')
 
 bot = commands.Bot()
 
+@bot.event
+async def on_ready():
+    print(f"走吧")
+
 register_commands(bot)
 
 bot.run(BOTTOKEN)
