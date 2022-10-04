@@ -1,1 +1,2 @@
-command_list = ['ping', 'echo']
+ping
+echo

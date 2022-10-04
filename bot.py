@@ -4,6 +4,7 @@ import os
 import csv
 import random
 from cmds import register_commands
+from command_list import register_commands2
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -12,7 +13,10 @@ BOTTOKEN = os.getenv('BOTTOKEN')
 
 bot = commands.Bot()
 
-@tasks.loop(seconds=3)
+register_commands(bot)
+register_commands2(bot)
+
+@tasks.loop(minutes=3)
 async def loop():
     csv_file = open('vocab.csv', 'r')
     csv_reader = csv.reader(csv_file, delimiter=',')
@@ -26,7 +30,5 @@ async def loop():
 async def on_ready():
     print("走吧")
     loop.start()
-
-register_commands(bot)
 
 bot.run(BOTTOKEN)
