@@ -8,4 +8,18 @@ def register_commands2(bot):
 
     @bot.slash_command(name="list")
     async def command_slash(ctx):
-        await ctx.respond("\n".join(commands))
+        await ctx.respond(",".join(commands))
+
+
+#create a slash command called help that shows how to use the commands
+#the command should be called /help + "command name"
+#the command should show the command name, description, and usage
+    @bot.slash_command(name="help")
+    async def help_slash(ctx, command: str):
+        #check if command is in commandlist.txt
+        if command in commands:
+            #if it is, open the file from commandusages folder and read the file
+            with open("commandusages/"+ command + ".txt", "r") as f:
+                await ctx.respond(f.read())
+        else:
+            await ctx.respond("Command not found")
