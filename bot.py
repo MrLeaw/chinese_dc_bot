@@ -22,7 +22,7 @@ async def loop():
     csv_reader = csv.reader(csv_file, delimiter=',')
     # pick a random line, excluding the header
     line = random.choice(list(csv_reader)[1:])
-    first = "你怎麼發音**"+line[0]+"**？"
+    first = f"你怎麼發音**{line[0]}**？\n||{line[1]}||"
     channel = bot.get_channel(1026731489959882765)
     await channel.send(first)
 
