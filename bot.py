@@ -24,7 +24,7 @@ register_commands2(bot)
 
 @tasks.loop(minutes=3)
 async def loop():
-    csv_file = open('vocab.csv', 'r')
+    csv_file = open('vocab.csv', 'r', encoding='utf-8')
     csv_reader = csv.reader(csv_file, delimiter='|')
     
     
