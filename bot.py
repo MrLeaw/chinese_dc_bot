@@ -45,7 +45,6 @@ async def loop():
 
         if game_mode == GameMode.GUESS_TONE:
             user = await bot.fetch_user(user_id)
-            await user.send(f"Guess the tone of the following word: {line[0]}") 
             correct_tone = line[1]
             # generate two incorrect tones by replacing the correct tone with a random tone
             # i.e. replace the "ˇ", "ˋ", "ˊ", "˙" with a random tone
@@ -56,23 +55,37 @@ async def loop():
                 if [c for c in correct_tone if c in "ˇˋˊ˙"] == []:
                     incorrect_tone = incorrect_tone + random.choice("ˇˋˊ˙")
 
-
                 while incorrect_tone == correct_tone and incorrect_tone in options:
                     incorrect_tone = correct_tone.replace(random.choice(["ˇ", "ˋ", "ˊ", "˙"]), random.choice(["ˇ", "ˋ", "ˊ", "˙"]))
                 options.append(incorrect_tone)
             # send the three options to the user in a random order
             random.shuffle(options)
-            await user.send(f"1. {options[0]}     2. {options[1]}     3. {options[2]}")
-            await user.send("Button", view=MyView())
+            await user.send(f"Guess the tone of the following word: {line[0]}", view=MyView(options, correct_tone))
 
 class MyView(discord.ui.View):
-    @discord.ui.button(label="Button 1", row=0, style=discord.ButtonStyle.primary)
-    async def first_button_callback(self, button, interaction):
-        await interaction.response.send_message("You pressed me!")
+    options = []
+    
+    # initializer with text for all three buttons
+    def __init__(self, options, correct):
+        super().__init__()
+        self.options = options
+        self.correct = correct
 
-    @discord.ui.button(label="Button 2", row=1, style=discord.ButtonStyle.primary)
-    async def second_button_callback(self, button, interaction):
-        await interaction.response.send_message("You pressed me!")
+        for i in range(3):
+            btn = discord.ui.Button(label=options[i], custom_id=str(i))
+            btn.callback = self.callback
+            self.add_item(btn)
+       
+    async def callback(self, interaction: discord.Interaction):
+        # tell the user if they got it right or wrong
+        if self.options[int(interaction.data['custom_id'])] == self.correct:
+            await interaction.response.send_message("Correct!")
+        else:
+            await interaction.response.send_message("Incorrect! The correct answer is " + self.correct)
+        
+        # stop the buttons from showing up
+        self.stop()
+        
 
 
 @bot.event
