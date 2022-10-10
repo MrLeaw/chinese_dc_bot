@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 import os
+import database
 import csv
 import random
 from cmds import register_commands
@@ -22,12 +23,7 @@ bot = commands.Bot()
 register_commands(bot)
 register_commands2(bot)
 
-@tasks.loop(minutes=3)
-async def loop():
-    csv_file = open('vocab.csv', 'r', encoding='utf-8')
-    csv_reader = csv.reader(csv_file, delimiter='|')
-    
-    
+async def send_all():
     # get list of subscribers
     users = []
     with open('users.txt', 'r') as f:
@@ -38,38 +34,44 @@ async def loop():
             users = [int(s) for s in c.split(';')]
     
     for user_id in users:
-        # pick game mode
-        game_mode = random.choice(list(GameMode))
-        # pick a random line, excluding the header
-        line = random.choice(list(csv_reader)[1:])
+        await send(user_id)
 
-        if game_mode == GameMode.GUESS_TONE:
-            user = await bot.fetch_user(user_id)
-            correct_tone = line[1]
-            # generate two incorrect tones by replacing the correct tone with a random tone
-            # i.e. replace the "ˇ", "ˋ", "ˊ", "˙" with a random tone
-            options = [correct_tone]
-            for i in range(2):
-                # if there is no tone marker in the correct tone, then just add a random tone marker
-                incorrect_tone = correct_tone
-                if [c for c in correct_tone if c in "ˇˋˊ˙"] == []:
-                    incorrect_tone = incorrect_tone + random.choice("ˇˋˊ˙")
+async def send(user_id):
+    csv_file = open('vocab.csv', 'r')
+    csv_reader = csv.reader(csv_file, delimiter='|')
+    # pick game mode
+    game_mode = random.choice(list(GameMode))
+    # pick a random line, excluding the header
+    line = random.choice(list(csv_reader)[1:])
 
-                while incorrect_tone == correct_tone and incorrect_tone in options:
-                    incorrect_tone = correct_tone.replace(random.choice(["ˇ", "ˋ", "ˊ", "˙"]), random.choice(["ˇ", "ˋ", "ˊ", "˙"]))
-                options.append(incorrect_tone)
-            # send the three options to the user in a random order
-            random.shuffle(options)
-            await user.send(f"Guess the tone of the following word: {line[0]}", view=MyView(options, correct_tone))
+    if game_mode == GameMode.GUESS_TONE:
+        user = await bot.fetch_user(user_id)
+        correct_tone = line[1]
+        # generate two incorrect tones by replacing the correct tone with a random tone
+        # i.e. replace the "ˇ", "ˋ", "ˊ", "˙" with a random tone
+        options = [correct_tone]
+        for i in range(2):
+            # if there is no tone marker in the correct tone, then just add a random tone marker
+            incorrect_tone = correct_tone
+            if [c for c in correct_tone if c in "ˇˋˊ˙"] == []:
+                incorrect_tone = incorrect_tone + random.choice("ˇˋˊ˙")
+            while incorrect_tone == correct_tone and incorrect_tone in options:
+                incorrect_tone = correct_tone.replace(random.choice(["ˇ", "ˋ", "ˊ", "˙"]), random.choice(["ˇ", "ˋ", "ˊ", "˙"]))
+            options.append(incorrect_tone)
+        # send the three options to the user in a random order
+        random.shuffle(options)
+        await user.send(f"Guess the tone of the following word: {line[0]}", view=MyView(options, correct_tone, line[2]))
+
 
 class MyView(discord.ui.View):
     options = []
     
     # initializer with text for all three buttons
-    def __init__(self, options, correct):
+    def __init__(self, options, correct, meaning):
         super().__init__()
         self.options = options
         self.correct = correct
+        self.meaning = meaning
 
         for i in range(3):
             btn = discord.ui.Button(label=options[i], custom_id=str(i))
@@ -82,15 +84,18 @@ class MyView(discord.ui.View):
             await interaction.response.send_message("Correct!")
         else:
             await interaction.response.send_message("Incorrect! The correct answer is " + self.correct)
-        
+        await interaction.user.send("Meaning: " + self.meaning)
+
         # stop the buttons from showing up
         self.stop()
+        await send(interaction.user.id)
         
 
 
 @bot.event
 async def on_ready():
     print("走吧")
-    loop.start()
+    database.connect()
+    await send_all()
 
 bot.run(BOTTOKEN)
