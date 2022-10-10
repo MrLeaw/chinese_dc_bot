@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands, tasks
 import os
+import database
 import csv
 import random
 from cmds import register_commands
@@ -59,17 +60,18 @@ async def send(user_id):
             options.append(incorrect_tone)
         # send the three options to the user in a random order
         random.shuffle(options)
-        await user.send(f"Guess the tone of the following word: {line[0]}", view=MyView(options, correct_tone))
+        await user.send(f"Guess the tone of the following word: {line[0]}", view=MyView(options, correct_tone, line[2]))
 
 
 class MyView(discord.ui.View):
     options = []
     
     # initializer with text for all three buttons
-    def __init__(self, options, correct):
+    def __init__(self, options, correct, meaning):
         super().__init__()
         self.options = options
         self.correct = correct
+        self.meaning = meaning
 
         for i in range(3):
             btn = discord.ui.Button(label=options[i], custom_id=str(i))
@@ -82,7 +84,8 @@ class MyView(discord.ui.View):
             await interaction.response.send_message("Correct!")
         else:
             await interaction.response.send_message("Incorrect! The correct answer is " + self.correct)
-        
+        await interaction.user.send("Meaning: " + self.meaning)
+
         # stop the buttons from showing up
         self.stop()
         await send(interaction.user.id)
@@ -92,6 +95,7 @@ class MyView(discord.ui.View):
 @bot.event
 async def on_ready():
     print("走吧")
+    database.connect()
     await send_all()
 
 bot.run(BOTTOKEN)
