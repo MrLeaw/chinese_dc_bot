@@ -37,7 +37,7 @@ async def send_all():
         await send(user_id)
 
 async def send(user_id):
-    csv_file = open('vocab.csv', 'r')
+    csv_file = open('vocab.csv', 'r', encoding='utf-8')
     csv_reader = csv.reader(csv_file, delimiter='|')
     # pick game mode
     game_mode = random.choice(list(GameMode))
