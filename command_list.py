@@ -1,3 +1,5 @@
+import discord
+
 #create a function that makes a list of commands
 def register_commands2(bot):
     commands = []
@@ -23,3 +25,14 @@ def register_commands2(bot):
                 await ctx.respond(f.read())
         else:
             await ctx.respond("Command not found")
+        
+    @bot.command()
+    async def help2(ctx):
+        embed = discord.Embed(
+            title="Command Lists",
+            description="How to use these commands",
+            color=discord.Colour.blurple()
+        )
+        embed.set_author(name="Chinese Bot")
+
+        await ctx.respond(embed=embed)
