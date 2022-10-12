@@ -12,8 +12,6 @@ from enum import Enum
 class GameMode(Enum):
     GUESS_TONE = 1
 
-
-
 load_dotenv()
 
 BOTTOKEN = os.getenv('BOTTOKEN')

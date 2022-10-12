@@ -30,3 +30,6 @@ def delete_user(id: int):
 def user_exists(id : int):
     res = __get_database().get_collection("users").find_one({"id": id})
     return res != None
+
+def get_users():
+    return __get_database().get_collection("users").find()
